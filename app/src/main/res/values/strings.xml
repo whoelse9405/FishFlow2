@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">FishFlow</string>
+
+    <string-array name="report_class">
+        <item >인식 오류 </item>
+        <item >의견 및 제안</item>
+        <item >불편 신고</item>
+        <item >버그 신고</item>
+        <item >기타</item>
+    </string-array>
+</resources>
