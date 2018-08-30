@@ -6,13 +6,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <SurfaceView
-        android:id="@+id/surfaceView"
+    <com.example.emsys.fishflow.CameraPreview
+        android:id="@+id/cameraView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:visibility="visible" />
 
     <ImageButton
-        android:id="@+id/ButtonGallery"
+        android:id="@+id/galleryButton"
         android:layout_width="75dp"
         android:layout_height="75dp"
         android:layout_gravity="bottom|right"
@@ -20,7 +21,7 @@
         app:srcCompat="@android:drawable/ic_menu_gallery" />
 
     <ImageButton
-        android:id="@+id/ButtonPhoto"
+        android:id="@+id/searchButton"
         android:layout_width="75dp"
         android:layout_height="75dp"
         android:layout_gravity="bottom|center"
@@ -28,7 +29,7 @@
         app:srcCompat="@android:drawable/ic_menu_camera" />
 
     <ImageButton
-        android:id="@+id/ButtonExit"
+        android:id="@+id/exitButton"
         android:layout_width="75dp"
         android:layout_height="75dp"
         android:layout_gravity="top|right"
@@ -36,11 +37,11 @@
         app:srcCompat="@android:drawable/ic_menu_close_clear_cancel" />
 
     <ImageButton
-        android:id="@+id/ButtonInfo"
+        android:id="@+id/helpButton"
         android:layout_width="75dp"
         android:layout_height="75dp"
         android:layout_gravity="top|left|right"
         android:background="@android:color/transparent"
-        app:srcCompat="@android:drawable/ic_dialog_info" />
+        app:srcCompat="@android:drawable/ic_menu_help" />
 
 </FrameLayout>
