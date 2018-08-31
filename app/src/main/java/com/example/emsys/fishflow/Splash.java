@@ -13,10 +13,6 @@ public class Splash extends Activity{
     protected  void onCreate( Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
 
-        if(Build.VERSION.SDK_INT>=21){
-            getWindow().setStatusBarColor(Color.parseColor("#ff7828"));
-        }
-
         try{
             Thread.sleep(1000);
         }catch (InterruptedException e){

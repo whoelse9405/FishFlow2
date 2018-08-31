@@ -1,55 +1,185 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     android:id="@+id/layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="396dp"
-        android:layout_height="274dp"
-        app:srcCompat="@android:color/darker_gray" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_weight="0"
+        android:orientation="horizontal">
 
-    <ImageButton
-        android:id="@+id/ButtonInfo"
-        android:layout_width="75dp"
-        android:layout_height="75dp"
-        android:layout_gravity="top|left|right"
-        android:background="@android:color/transparent"
-        app:srcCompat="@android:drawable/ic_dialog_info" />
+        <ImageButton
+            android:id="@+id/helpButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            app:srcCompat="@android:drawable/ic_menu_help" />
 
-    <TextView
-        android:id="@+id/Title"
-        android:layout_width="75dp"
-        android:layout_height="75dp"
-        android:layout_gravity="top|center"
-        android:gravity="center"
-        android:text="FIshFlow" />
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="FishFlow"
+            android:textAllCaps="false"
+            android:textAppearance="@style/TextAppearance.AppCompat"
+            android:textColor="@android:color/black"
+            android:textSize="24sp"
+            android:textStyle="bold|italic"
+            tools:background="@android:color/transparent" />
 
-    <ImageButton
-        android:id="@+id/exitButton"
-        android:layout_width="75dp"
-        android:layout_height="75dp"
-        android:layout_gravity="top|right"
-        android:background="@android:color/transparent"
-        app:srcCompat="@android:drawable/ic_menu_close_clear_cancel" />
+        <ImageButton
+            android:id="@+id/backButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            app:srcCompat="@android:drawable/ic_menu_revert" />
 
-    <ImageButton
-        android:id="@+id/galleryButton"
-        android:layout_width="75dp"
-        android:layout_height="75dp"
-        android:layout_gravity="bottom|right"
-        android:background="@android:color/transparent"
-        app:srcCompat="@android:drawable/ic_menu_gallery" />
+    </LinearLayout>
 
-    <ImageButton
-        android:id="@+id/photoButton"
-        android:layout_width="75dp"
-        android:layout_height="75dp"
-        android:layout_gravity="bottom|center"
-        android:background="@android:color/transparent"
-        app:srcCompat="@android:drawable/ic_menu_camera" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="2">
 
-</FrameLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/totalImageView"
+                android:layout_width="match_parent"
+                android:layout_height="400dp"
+                android:layout_weight="1"
+                android:background="@android:color/darker_gray"
+                app:srcCompat="@android:color/darker_gray" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="291dp"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/speciesTitle"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:paddingBottom="10dp"
+                                android:paddingTop="10dp"
+                                android:text="어종"
+                                android:textSize="18sp" />
+
+                            <View
+                                android:id="@+id/divider1"
+                                android:layout_width="1dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:background="?android:attr/listDivider" />
+
+                            <TextView
+                                android:id="@+id/species"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="100"
+                                android:gravity="center"
+                                android:paddingBottom="10dp"
+                                android:paddingTop="10dp"
+                                android:text="고등어"
+                                android:textSize="18sp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/originTitle"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:paddingBottom="10dp"
+                                android:paddingTop="10dp"
+                                android:text="원산지"
+                                android:textSize="18sp" />
+
+                            <View
+                                android:id="@+id/divider2"
+                                android:layout_width="1dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:background="?android:attr/listDivider" />
+
+                            <TextView
+                                android:id="@+id/origin"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="100"
+                                android:gravity="center"
+                                android:paddingBottom="10dp"
+                                android:paddingTop="10dp"
+                                android:text="노르웨이"
+                                android:textSize="18sp" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/reportButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_margin="18dp"
+                        android:text="신고"
+                        android:textSize="18sp" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/infoTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="INFO"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/fishInfoText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="고등어 또는 참고등어는 고등어과에 속하는 바닷물고기이다.  《자산어보》에는 고등어로 기록되어 있으며, 《재물보》에는 고도어로 기록되었다.  어린 개체는 고도리라 부른다. 영어권 국가에서는 태평양고등어, 일본고등어, 처브고등어라고도 한다. 등빛이 시퍼렇고 무늬가 선명한 대서양고등어와 다르게 무늬가 비교적 흐릿하며 등에 약간 녹색기운이 돌고, 대서양 고등어에 없는 부레가 있다는 점에서 차이를 지닌다." />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

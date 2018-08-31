@@ -92,6 +92,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+        //searchButton
+        searchButton = (ImageButton)findViewById(R.id.searchButton);
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
+                startActivity(intent);
+            }
+        });
+
     }
 
     public static Camera getCamera(){

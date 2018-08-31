@@ -10,15 +10,13 @@ import android.widget.ImageButton;
 
 public class HelpActivity extends AppCompatActivity {
 
-    ImageButton exitButton;
+    private ImageButton exitButton;
 
     @Override
     protected  void onCreate( Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_help);
 
-        if(Build.VERSION.SDK_INT>=21){
-            getWindow().setStatusBarColor(Color.parseColor("#ff7828"));
-        }
 
         exitButton=(ImageButton)findViewById(R.id.exitButton);
         exitButton.setOnClickListener(new View.OnClickListener() {
