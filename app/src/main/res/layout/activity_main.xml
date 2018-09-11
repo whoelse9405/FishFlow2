@@ -2,15 +2,17 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:background="@android:color/black">
 
-    <com.example.emsys.fishflow.CameraPreview
-        android:id="@+id/cameraView"
+    <FrameLayout
+        android:id="@+id/cameraPreviewLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="visible" />
+        android:layout_gravity="center"
+        android:visibility="visible"/>
+
 
     <ImageButton
         android:id="@+id/galleryButton"

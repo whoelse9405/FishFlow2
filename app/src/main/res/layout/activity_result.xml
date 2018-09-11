@@ -58,7 +58,7 @@
             <ImageView
                 android:id="@+id/totalImageView"
                 android:layout_width="match_parent"
-                android:layout_height="400dp"
+                android:layout_height="300dp"
                 android:layout_weight="1"
                 android:background="@android:color/darker_gray"
                 app:srcCompat="@android:color/darker_gray" />

@@ -23,27 +23,19 @@ import android.view.SurfaceView;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * Created by Administrator on 2017-08-14.
- */
-
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback{
 
+    private SurfaceHolder surfaceHolder;
     private Camera mCamera;
     public List<Camera.Size> listPreviewSizes;
     private Camera.Size previewSize;
-    private Context context;
 
     // SurfaceView 생성자
-    public CameraPreview(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        this.context = context;
-        mCamera = MainActivity.getCamera();
-        if(mCamera == null){
-            mCamera = Camera.open();
-        }
-        listPreviewSizes = mCamera.getParameters().getSupportedPreviewSizes();
-
+    public CameraPreview(Context context, Camera camera){
+        super(context);
+        this.mCamera=camera;
+        this.surfaceHolder = getHolder();       //getHolder를 넣어줌
+        this.surfaceHolder.addCallback(this);   //콜백을 아래에서 처리를 해줌 (this는 해당 클래스에서 처리를 함을 나타냄)
     }
 
     //  SurfaceView 생성시 호출
@@ -56,7 +48,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 mCamera  = Camera.open();
             }
 
-            // 카메라 설정
+            //// 카메라 설정 ////
             Camera.Parameters parameters = mCamera .getParameters();
 
             // 카메라의 회전이 가로/세로일때 화면을 설정한다.
@@ -69,67 +61,26 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 mCamera.setDisplayOrientation(0);
                 parameters.setRotation(0);
             }
-            mCamera.setParameters(parameters);
 
+            //자동 포커스 설정
+            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+            //카메라객체에 설정한 옵션 전달
+            mCamera.setParameters(parameters);
+            //preview를 열어주고 이 surfaceHolder에서 처리함을 알려줌
             mCamera.setPreviewDisplay(surfaceHolder);
 
             // 카메라 미리보기를 시작한다.
             mCamera.startPreview();
 
-            // 자동포커스 설정
-            mCamera.autoFocus(new Camera.AutoFocusCallback() {
-                public void onAutoFocus(boolean success, Camera camera) {
-                    if (success) {
 
-                    }
-                }
-            });
         } catch (IOException e) {
         }
     }
 
     // SurfaceView 의 크기가 바뀌면 호출
     @Override
-    public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int w, int h) {
-
-        // 카메라 화면을 회전 할 때의 처리
-        if (surfaceHolder.getSurface() == null){
-            // 프리뷰가 존재하지 않을때
-            return;
-        }
-        // 프리뷰를 다시 설정한다.
-        try {
-            mCamera .stopPreview();
-
-            Camera.Parameters parameters = mCamera .getParameters();
-
-            // 화면 회전시 사진 회전 속성을 맞추기 위해 설정한다.
-            int rotation = MainActivity.getInstance.getWindowManager().getDefaultDisplay().getRotation();
-            if (rotation == Surface.ROTATION_0) {
-                mCamera .setDisplayOrientation(90);
-                parameters.setRotation(90);
-            }else if(rotation == Surface.ROTATION_90){
-                mCamera .setDisplayOrientation(0);
-                parameters.setRotation(0);
-            }else if(rotation == Surface.ROTATION_180){
-                mCamera .setDisplayOrientation(270);
-                parameters.setRotation(270);
-            }else{
-                mCamera .setDisplayOrientation(180);
-                parameters.setRotation(180);
-            }
-
-            // 변경된 화면 넓이를 설정한다.
-            parameters.setPreviewSize(previewSize.width, previewSize.height);
-            mCamera .setParameters(parameters);
-
-            // 새로 변경된 설정으로 프리뷰를 시작한다
-            mCamera .setPreviewDisplay(surfaceHolder);
-            mCamera .startPreview();
-
-        } catch (Exception e){
-            e.printStackTrace();
-        }
+    public void surfaceChanged(SurfaceHolder surfaceHolder, int format, int width, int height) {
+        mCamera.startPreview();
     }
 
     // SurfaceView가 종료시 호출
@@ -140,6 +91,15 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             mCamera.stopPreview();
             mCamera.release();
             mCamera = null;
+        }
+    }
+
+    public boolean capture(Camera.PictureCallback handler){
+        if(mCamera!=null){
+            mCamera.takePicture(null,null,handler);
+            return true;
+        }else{
+            return false;
         }
     }
 
