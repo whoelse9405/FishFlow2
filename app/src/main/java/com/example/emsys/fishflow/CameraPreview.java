@@ -25,7 +25,7 @@ import java.util.List;
 
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback{
 
-    private SurfaceHolder surfaceHolder;
+    private SurfaceHolder mHolder;
     private Camera mCamera;
     public List<Camera.Size> listPreviewSizes;
     private Camera.Size previewSize;
@@ -34,20 +34,21 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     public CameraPreview(Context context, Camera camera){
         super(context);
         this.mCamera=camera;
-        this.surfaceHolder = getHolder();       //getHolder를 넣어줌
-        this.surfaceHolder.addCallback(this);   //콜백을 아래에서 처리를 해줌 (this는 해당 클래스에서 처리를 함을 나타냄)
+        mHolder = getHolder();       //getHolder를 넣어줌
+        mHolder.addCallback(this);   //콜백을 아래에서 처리를 해줌 (this는 해당 클래스에서 처리를 함을 나타냄)
+        // 카메라가 SurfaceView를  독점하기 위한 타입 설정
+        // 버퍼를 사용하지않음
+        mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
     //  SurfaceView 생성시 호출
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
-
         try {
             // 카메라 객체를 사용할 수 있게 연결한다.
-            if(mCamera  == null){
-                mCamera  = Camera.open();
+            if(mCamera == null){
+                mCamera = Camera.open();
             }
-
             //// 카메라 설정 ////
             Camera.Parameters parameters = mCamera .getParameters();
 
@@ -66,20 +67,48 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
             //카메라객체에 설정한 옵션 전달
             mCamera.setParameters(parameters);
+
             //preview를 열어주고 이 surfaceHolder에서 처리함을 알려줌
-            mCamera.setPreviewDisplay(surfaceHolder);
+            mCamera.setPreviewDisplay(mHolder);
 
-            // 카메라 미리보기를 시작한다.
+            // 카메라 미리보기를 시작한다
             mCamera.startPreview();
-
-
         } catch (IOException e) {
+            Log.e("CameraSurfaceView", "Failed to set camera preview.", e);
         }
     }
 
     // SurfaceView 의 크기가 바뀌면 호출
     @Override
     public void surfaceChanged(SurfaceHolder surfaceHolder, int format, int width, int height) {
+
+        // 카메라 객체를 사용할 수 있게 연결한다.
+        if(mCamera == null){
+            mCamera = Camera.open();
+        }
+
+        //// 카메라 설정 ////
+        Camera.Parameters parameters = mCamera .getParameters();
+
+        // 카메라의 회전이 가로/세로일때 화면을 설정한다.
+        if (getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
+            parameters.set("orientation", "portrait");
+            mCamera.setDisplayOrientation(90);
+            parameters.setRotation(90);
+        } else {
+            parameters.set("orientation", "landscape");
+            mCamera.setDisplayOrientation(0);
+            parameters.setRotation(0);
+        }
+
+        //미리보기 크기를 설정한다
+        //parameters.setPreviewSize(width, height);
+        //자동 포커스 설정
+        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+        //카메라객체에 설정한 옵션 전달
+        mCamera.setParameters(parameters);
+
+        // 카메라 미리보기를 시작한다
         mCamera.startPreview();
     }
 
@@ -89,19 +118,25 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         if(mCamera != null){
             // 카메라 미리보기를 종료한다.
             mCamera.stopPreview();
+            // 메모리 해제
             mCamera.release();
             mCamera = null;
         }
     }
 
-    public boolean capture(Camera.PictureCallback handler){
-        if(mCamera!=null){
-            mCamera.takePicture(null,null,handler);
+    // 사진을 찍을때 호출되는 함수 (스냅샷)
+    public boolean capture(Camera.PictureCallback handler) {
+        if (mCamera != null) {
+            // 셔터후
+            // Raw 이미지 생성후
+            // JPE 이미지 생성후
+            mCamera.takePicture(null, null, handler);
             return true;
-        }else{
+        } else {
             return false;
         }
     }
+
 
     // 화면이 회전할 때 화면 사이즈를 구한다.
     @Override

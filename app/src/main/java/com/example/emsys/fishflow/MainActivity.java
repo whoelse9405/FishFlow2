@@ -19,6 +19,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.View;
@@ -31,6 +32,10 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URLEncoder;
 
 //import com.example.leedongjin_notebook.fishflow2.R;
 
@@ -82,19 +87,12 @@ public class MainActivity extends AppCompatActivity {
         galleryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("image/*");
-                startActivityForResult(Intent.createChooser(intent, "Select Picture"), REQ_GALLERY_CODE);
-
-
-                /*
                 Intent intent = new Intent(Intent.ACTION_PICK);                     //갤러리 불러오기 인텐트
                 intent.setType(MediaStore.Images.Media.CONTENT_TYPE);               //타입 결정
                 intent.setData(MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 intent.setType("image/*");                                          //이미지 형태만 가져오기
                 //startActivityForResult(Intent.createChooser(intent, "Select Picture"), REQ_PICK_CODE);
                 startActivityForResult(intent, REQ_GALLERY_CODE);
-                */
             }
         });
 
@@ -123,47 +121,61 @@ public class MainActivity extends AppCompatActivity {
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(mCamera!=null)
-                    mCamera.takePicture(null, null, new Camera.PictureCallback() {
-                        @Override
+                if(mCamera!=null){
+                    // cameraView에 있는 capture() 메서드 실행
+                    cameraPreview.capture(new Camera.PictureCallback() {
+
+                        // JPEG 사진파일 생성후 호출됨
+                        // 찍은 사진을 처리
+                        // PictureCallback 인터페이스 에 있는 onPictureTaken() 메서드
+                        // byte[] data - 사진 데이타
                         public void onPictureTaken(byte[] data, Camera camera) {
-                            //Bitmap bitmap = ConvertYuvByteArrayToBitmap(data, camera);
-
-                            /*
-                            if(data==null){
-                                Toast.makeText(MainActivity.this, "Captured image is empty", Toast.LENGTH_LONG).show();
-                                mCamera.startPreview();
-                                return;
-                            }else{
-                                byte[] img = ConvertYuvByteArrayToBitmap(data,camera);
-
-                                Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
-                                intent.putExtra("cameraImage",img);
-                                Log.e("send picture","data size : "+ img.length);
-                                startActivity(intent);
-                                //mCamera.startPreview();
-                            }
-                            */
                             try {
-                                Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                                String outUriStr = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap, "Captured Image", "Captured Image using camera.");
 
+                                // 사진데이타를 비트맵 객체로 저장
+                                Bitmap bitmap = BitmapFactory.decodeByteArray(data,0,data.length);
+                                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                                //포맷 변경 및 압축
+                                bitmap.compress(Bitmap.CompressFormat.JPEG,10,outputStream);
+
+                                //byteArray 및 bitmap 생성
+                                byte[] byteArray=outputStream.toByteArray();
+                                bitmap = BitmapFactory.decodeByteArray(byteArray,0,byteArray.length);
+
+
+                                // 파일 생성
+                                // 폴더 생성
+                                // 사진 저장
+
+                                // bitmap 이미지를 이용해 앨범에 저장
+                                // 내용재공자를 통해서 앨범에 저장
+                                String outUriStr = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap,"Captured Image","Captured Image using Camera.");
                                 if (outUriStr == null) {
-                                    Log.d("SampleCapture", "Image insert failed.");
+                                    Log.e("SampleCapture", "Image insert failed.");
                                     return;
                                 } else {
                                     Uri outUri = Uri.parse(outUriStr);
-                                    sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, outUri));
+                                    sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,outUri));
+                                    Log.d("SampleCapture", "Image insert success.");
                                 }
+
+
+
+
+
+                                //결과화면 전송
+                                Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
+                                intent.putExtra("Image",byteArray);
+                                startActivity(intent);
+
+                                // 다시 미리보기 화면 보여줌
                                 camera.startPreview();
-                            }catch (Exception e){
-                                Log.e("SampleCaptrue","Failed to insert image.",e);
+                            } catch (Exception e) {
+                                Log.e("SampleCapture", "Failed to insert image.", e);
                             }
                         }
                     });
-
-
-
+                }
             }
         });
 
@@ -187,6 +199,41 @@ public class MainActivity extends AppCompatActivity {
         //return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
     }
 
+    //(byte->bitmap)
+    public static Bitmap ByteArrayToBitmap(byte[] byteArray,int quality){
+        if(quality==100){
+            return BitmapFactory.decodeByteArray(byteArray,0,byteArray.length);
+        }else{
+            Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray,0,byteArray.length);
+            byte[] compByte = BitmapToByteArray(bitmap,quality);
+            return BitmapFactory.decodeByteArray(compByte,0,compByte.length);
+        }
+    }
+
+    //(bitmap->byte)
+    public static byte[] BitmapToByteArray(Bitmap bitmap,int quality){
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        //포맷 변경 및 압축
+        bitmap.compress(Bitmap.CompressFormat.JPEG,quality,outputStream);
+        byte[] byteArray=outputStream.toByteArray();
+        return byteArray;
+    }
+
+    //byteArray를 Base64인코딩 후 utf-8로 인코딩
+    public static String ByteArrayToBase64(byte[] byteArray){
+        //base64 인코딩
+        String image = Base64.encodeToString(byteArray,Base64.DEFAULT);
+
+        //utf-8 인코딩
+        String temp="";
+        try{
+            temp="&imagedevice="+ URLEncoder.encode(image,"utf-8");
+        }catch(Exception e){
+            Log.e("exception",e.toString());
+        }
+
+        return temp;
+    }
 
     private void setInit(){
         // 카메라 객체를 R.layout.activity_main의 레이아웃에 선언한 SurfaceView에서 먼저 정의해야 함으로 setContentView 보다 먼저 정의한다.
@@ -198,8 +245,6 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
     }
-
-
 
     //권한 요청
     public boolean requestPermission(){
@@ -242,12 +287,21 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode != RESULT_OK) return;
 
         switch (requestCode) {
+            //갤러리 선택사진 결과화면으로 전송
             case REQ_GALLERY_CODE: {
-
-
-
-                //imageView = (ImageView) findViewById(R.id.imageView);
-                //imageView.setImageURI(data.getData());
+                try{
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(),data.getData());
+                    byte[] byteArray = BitmapToByteArray(bitmap,50);
+                    Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
+                    intent.putExtra("Image",byteArray);
+                    startActivity(intent);
+                }catch (FileNotFoundException e){
+                    e.printStackTrace();
+                }catch (IOException e){
+                    e.printStackTrace();
+                }catch (OutOfMemoryError e){
+                    Toast.makeText(getApplicationContext(), "이미지 용량이 너무 큽니다.", Toast.LENGTH_SHORT).show();
+                }
                 break;
             }
             case REQ_CAMERA_CODE: {

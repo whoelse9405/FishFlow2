@@ -27,21 +27,18 @@ public class ResultActivity extends AppCompatActivity {
     byte[] byteImage;
     @Override
     protected  void onCreate( Bundle savedInstanceState){
-        Log.e("resultActivity","start");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
 
-
+        //이미지뷰 세팅
         Intent intent = getIntent();
-        Toast.makeText(ResultActivity.this, " "+intent.getByteArrayExtra("cameraImage").length, Toast.LENGTH_SHORT).show();
-        //filePath = intent.getStringExtra("FilePath");
-        if(intent.getByteArrayExtra("cameraImage").length>0){
-            byte[] byteImage = getIntent().getByteArrayExtra("cameraImage");
+        byte[] byteImage = intent.getByteArrayExtra("Image");
+        if(byteImage.length>0){
             Bitmap bitmapImage = BitmapFactory.decodeByteArray(byteImage,0,byteImage.length);
-
-            imageView = (ImageView)findViewById(R.id.imageView);
-            imageView.setMaxWidth(1920);
-            imageView.setMaxHeight(1080);
+            imageView = (ImageView)findViewById(R.id.totalImageView);
+            //이미지뷰 최대 크기 조정
+            //imageView.setMaxWidth(1920);
+            //imageView.setMaxHeight(1080);
             imageView.setImageBitmap(bitmapImage);
         }
 
