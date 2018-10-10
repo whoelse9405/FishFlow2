@@ -1,8 +1,10 @@
 package com.example.emsys.fishflow;
 
 public class ReportData {
-    String image_id;
-    String report_type;
+    String cropImageId;
+    String reportClass;
     String title;
-    String content;
+    String contents;
+    //String date;
+    //String time;
 }

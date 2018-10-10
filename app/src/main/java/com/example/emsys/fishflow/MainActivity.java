@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
@@ -34,7 +35,9 @@ import android.widget.Toast;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URLEncoder;
 
 //import com.example.leedongjin_notebook.fishflow2.R;
@@ -135,6 +138,12 @@ public class MainActivity extends AppCompatActivity {
                                 // 사진데이타를 비트맵 객체로 저장
                                 Bitmap bitmap = BitmapFactory.decodeByteArray(data,0,data.length);
                                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+                                //90도 회전
+                                Matrix m = new Matrix();
+                                m.setRotate(90,(float)bitmap.getWidth(),(float)bitmap.getHeight());     //회전 정보 입력
+                                bitmap=Bitmap.createBitmap(bitmap,0,0,bitmap.getWidth(),bitmap.getHeight(),m,false);    //90도 회전
+
                                 //포맷 변경 및 압축
                                 bitmap.compress(Bitmap.CompressFormat.JPEG,10,outputStream);
 
@@ -142,8 +151,12 @@ public class MainActivity extends AppCompatActivity {
                                 byte[] byteArray=outputStream.toByteArray();
                                 bitmap = BitmapFactory.decodeByteArray(byteArray,0,byteArray.length);
 
+//                              //파일로 저장
+                                //File file = new File(filepath, filename);
+                                //OutputStream outStream = new FileOutputStream(file);
+                                //rotateBitmap.compress(CompressFormat.JPEG, 100, outStream);
+                                //outStream.close();
 
-                                // 파일 생성
                                 // 폴더 생성
                                 // 사진 저장
 
@@ -159,12 +172,12 @@ public class MainActivity extends AppCompatActivity {
                                     Log.d("SampleCapture", "Image insert success.");
                                 }
 
-
-
-
+                                //서버 전송
 
                                 //결과화면 전송
                                 Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
+                                intent.putExtra("ImageHeight",cameraPreview.getHeight());
+                                intent.putExtra("ImageWidth",cameraPreview.getWidth());
                                 intent.putExtra("Image",byteArray);
                                 startActivity(intent);
 

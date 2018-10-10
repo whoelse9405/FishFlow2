@@ -37,9 +37,13 @@ public class ResultActivity extends AppCompatActivity {
             Bitmap bitmapImage = BitmapFactory.decodeByteArray(byteImage,0,byteImage.length);
             imageView = (ImageView)findViewById(R.id.totalImageView);
             //이미지뷰 최대 크기 조정
-            //imageView.setMaxWidth(1920);
-            //imageView.setMaxHeight(1080);
+            int height = intent.getIntExtra("ImageHeight",0);
+            int width = intent.getIntExtra("ImageWidth",0);
+            imageView.setMaxWidth(height);
+            imageView.setMaxHeight(width);
             imageView.setImageBitmap(bitmapImage);
+
+
         }
 
 
