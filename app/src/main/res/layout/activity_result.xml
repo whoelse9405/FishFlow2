@@ -55,13 +55,37 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <ImageView
-                android:id="@+id/totalImageView"
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@android:color/darker_gray"
-                app:srcCompat="@android:color/darker_gray" />
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+                <ImageView
+                    android:id="@+id/totalImageView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@android:color/darker_gray"
+                    app:srcCompat="@android:color/darker_gray" />
+
+                <Button
+                    android:id="@+id/button"
+                    android:layout_width="100dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/result_select_button"/>
+
+                <Button
+                    android:id="@+id/button2"
+                    android:layout_width="100dp"
+                    android:layout_height="50dp"
+                    android:layout_alignStart="@+id/button"
+                    android:layout_alignLeft="@+id/button"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginStart="151dp"
+                    android:layout_marginLeft="151dp"
+                    android:layout_marginTop="0dp"
+                    android:background="@drawable/result_select_button" />
+            </RelativeLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"

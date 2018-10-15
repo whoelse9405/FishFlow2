@@ -21,6 +21,8 @@ public class ResultActivity extends AppCompatActivity {
     private ImageButton backButton;
     private Button reportButton;
     private ImageView imageView;
+    //private Button[] resultSelectButton;
+    //private ResultData resultData;
 
     private String filePath;
 
@@ -39,11 +41,9 @@ public class ResultActivity extends AppCompatActivity {
             //이미지뷰 최대 크기 조정
             int height = intent.getIntExtra("ImageHeight",0);
             int width = intent.getIntExtra("ImageWidth",0);
-            imageView.setMaxWidth(height);
+            imageView.setMaxWidth(300);
             imageView.setMaxHeight(width);
             imageView.setImageBitmap(bitmapImage);
-
-
         }
 
 

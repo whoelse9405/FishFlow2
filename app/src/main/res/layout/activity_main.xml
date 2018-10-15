@@ -28,7 +28,7 @@
         android:layout_height="75dp"
         android:layout_gravity="bottom|center"
         android:background="@android:color/transparent"
-        app:srcCompat="@android:drawable/ic_menu_camera" />
+        app:srcCompat="@drawable/search_button_2cm" />
 
     <ImageButton
         android:id="@+id/exitButton"
