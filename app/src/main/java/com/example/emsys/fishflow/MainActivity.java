@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -15,6 +16,7 @@ import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -39,6 +41,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URLEncoder;
+import java.util.Calendar;
 
 //import com.example.leedongjin_notebook.fishflow2.R;
 
@@ -118,7 +121,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
         //searchButton
         searchButton = (ImageButton)findViewById(R.id.searchButton);
         searchButton.setOnClickListener(new View.OnClickListener() {
@@ -134,64 +136,79 @@ public class MainActivity extends AppCompatActivity {
                         // byte[] data - 사진 데이타
                         public void onPictureTaken(byte[] data, Camera camera) {
                             try {
-
                                 // 사진데이타를 비트맵 객체로 저장
                                 Bitmap bitmap = BitmapFactory.decodeByteArray(data,0,data.length);
-                                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
                                 //90도 회전
                                 Matrix m = new Matrix();
                                 m.setRotate(90,(float)bitmap.getWidth(),(float)bitmap.getHeight());     //회전 정보 입력
                                 bitmap=Bitmap.createBitmap(bitmap,0,0,bitmap.getWidth(),bitmap.getHeight(),m,false);    //90도 회전
 
-                                //포맷 변경 및 압축
-                                bitmap.compress(Bitmap.CompressFormat.JPEG,10,outputStream);
-
-                                //byteArray 및 bitmap 생성
-                                byte[] byteArray=outputStream.toByteArray();
-                                bitmap = BitmapFactory.decodeByteArray(byteArray,0,byteArray.length);
-
-//                              //파일로 저장
-                                //File file = new File(filepath, filename);
-                                //OutputStream outStream = new FileOutputStream(file);
-                                //rotateBitmap.compress(CompressFormat.JPEG, 100, outStream);
-                                //outStream.close();
-
-                                // 폴더 생성
-                                // 사진 저장
-
-                                // bitmap 이미지를 이용해 앨범에 저장
-                                // 내용재공자를 통해서 앨범에 저장
-                                String outUriStr = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap,"Captured Image","Captured Image using Camera.");
-                                if (outUriStr == null) {
-                                    Log.e("SampleCapture", "Image insert failed.");
-                                    return;
-                                } else {
-                                    Uri outUri = Uri.parse(outUriStr);
-                                    sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,outUri));
-                                    Log.d("SampleCapture", "Image insert success.");
-                                }
+                                ////파일로 저장
+                                String ImagePath = StoreBitmap(bitmap,100);
 
                                 //서버 전송
+                                //byteArray 생성
+                                //byte[] byteArray=BitmapToByteArray(bitmap,100);
 
-                                //결과화면 전송
+                                //결과화면으로 데이터 전송
                                 Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
-                                intent.putExtra("ImageHeight",cameraPreview.getHeight());
-                                intent.putExtra("ImageWidth",cameraPreview.getWidth());
-                                intent.putExtra("Image",byteArray);
+                                intent.putExtra("ImagePath",ImagePath);
                                 startActivity(intent);
 
                                 // 다시 미리보기 화면 보여줌
                                 camera.startPreview();
                             } catch (Exception e) {
-                                Log.e("SampleCapture", "Failed to insert image.", e);
+                                e.printStackTrace();
                             }
                         }
                     });
                 }
             }
         });
+    }
 
+    //bitmap 파일 저장
+    public static String StoreBitmap(Bitmap bitmap, int quality){
+        //파일로 저장
+        File folder = null;
+        String folderPath=null;
+
+        //폴더경로 설정
+        if ( !Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
+            // SD카드가 마운트되어있지 않음
+            folder = Environment.getRootDirectory();
+        }else{
+            // SD카드가 마운트되어있음
+            folder = Environment.getExternalStorageDirectory();
+        }
+        folderPath = folder.getAbsolutePath() + String.format("/FishFlow");
+        folder=new File(folderPath);
+
+        // 디렉토리가 존재하지 않으면 디렉토리 생성
+        if ( !folder.exists() ){
+            folder.mkdirs();
+        }
+
+        //파일명 설정
+        Calendar cal = Calendar.getInstance();
+        String filename=String.format("FF_%d%02d%02d_%02d%02d%02d.jpg", cal.get(Calendar.YEAR), cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND));
+
+        //파일 저장
+        File file = new File(folder.toString(), filename);
+        FileOutputStream filestream = null;
+        try {
+            filestream = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, filestream);
+            filestream.flush();
+            filestream.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return file.toString();
     }
 
     //사진 데이터 형식 변환(YUV->bitmap)
@@ -259,6 +276,25 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
     }
 
+    //URI를 절대경로로 변환
+    private String getRealPathFromURI(Uri contentURI) {
+
+        String result;
+        Cursor cursor = getContentResolver().query(contentURI, null, null, null, null);
+
+        if (cursor == null) { // Source is Dropbox or other similar local file path
+            result = contentURI.getPath();
+
+        } else {
+            cursor.moveToFirst();
+            int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+            result = cursor.getString(idx);
+            cursor.close();
+        }
+
+        return result;
+    }
+
     //권한 요청
     public boolean requestPermission(){
         int sdkVersion = Build.VERSION.SDK_INT;
@@ -278,9 +314,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-
         if (RESULT_PERMISSIONS == requestCode) {
-
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0]==Manifest.permission.CAMERA) {
                 // 카메라 권한 허가시
                 setInit();
@@ -290,7 +324,6 @@ public class MainActivity extends AppCompatActivity {
             }
             return;
         }
-
     }
 
     @Override
@@ -302,19 +335,11 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             //갤러리 선택사진 결과화면으로 전송
             case REQ_GALLERY_CODE: {
-                try{
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(),data.getData());
-                    byte[] byteArray = BitmapToByteArray(bitmap,50);
-                    Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
-                    intent.putExtra("Image",byteArray);
-                    startActivity(intent);
-                }catch (FileNotFoundException e){
-                    e.printStackTrace();
-                }catch (IOException e){
-                    e.printStackTrace();
-                }catch (OutOfMemoryError e){
-                    Toast.makeText(getApplicationContext(), "이미지 용량이 너무 큽니다.", Toast.LENGTH_SHORT).show();
-                }
+                Uri uri = data.getData();
+                String ImagePath=getRealPathFromURI(uri);
+                Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
+                intent.putExtra("ImagePath",ImagePath);
+                startActivity(intent);
                 break;
             }
             case REQ_CAMERA_CODE: {
