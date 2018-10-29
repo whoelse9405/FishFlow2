@@ -61,10 +61,10 @@ class ImageData{
 class Fish{
     //크롭 정보(사각형)
     public int id;               //크롭 사진을 구별하는 식별자
-    public float startX;          //시작 X좌표 비율
-    public float startY;          //사작 Y좌표 비율
-    public float endX;            //끝 X좌표 비율
-    public float endY;            //끝 Y좌표 비율
+    public double startX;          //시작 X좌표 비율
+    public double startY;          //사작 Y좌표 비율
+    public double endX;            //끝 X좌표 비율
+    public double endY;            //끝 Y좌표 비율
 
     public boolean isError;    //오류여부(false=정상 true=비정상)
 
@@ -74,7 +74,7 @@ class Fish{
     public String origin;       //원산지
     public String info;         //어종 설명, 정보
 
-    public Fish(int id, float startX, float startY, float endX, float endY, boolean isError, int fishCode, String species, String origin, String info) {
+    public Fish(int id, double startX, double startY, double endX, double endY, boolean isError, int fishCode, String species, String origin, String info) {
         this.id = id;
         this.startX = startX;
         this.startY = startY;
@@ -90,16 +90,16 @@ class Fish{
     public int getId() {
         return id;
     }
-    public float getStartX() {
+    public double getStartX() {
         return startX;
     }
-    public float getStartY() {
+    public double getStartY() {
         return startY;
     }
-    public float getEndX() {
+    public double getEndX() {
         return endX;
     }
-    public float getEndY() {
+    public double getEndY() {
         return endX;
     }
     public boolean isError() {

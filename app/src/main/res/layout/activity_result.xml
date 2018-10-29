@@ -55,7 +55,8 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <RelativeLayout
+            <FrameLayout
+                android:id="@+id/result_layout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1">
@@ -64,28 +65,10 @@
                     android:id="@+id/totalImageView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:adjustViewBounds="true"
                     android:layout_weight="1"
-                    android:background="@android:color/darker_gray"/>
-
-                <Button
-                    android:id="@+id/button"
-                    android:layout_width="100dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/result_no_selected_button"/>
-
-                <Button
-                    android:id="@+id/button2"
-                    android:layout_width="100dp"
-                    android:layout_height="50dp"
-                    android:layout_alignStart="@+id/button"
-                    android:layout_alignLeft="@+id/button"
-                    android:layout_alignParentTop="true"
-                    android:layout_marginStart="151dp"
-                    android:layout_marginLeft="151dp"
-                    android:layout_marginTop="0dp"
-                    android:background="@drawable/result_no_selected_button" />
-            </RelativeLayout>
+                    android:adjustViewBounds="true"
+                    android:background="@android:color/darker_gray" />
+            </FrameLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"

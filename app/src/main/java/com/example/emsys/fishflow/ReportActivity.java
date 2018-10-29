@@ -59,21 +59,27 @@ public class ReportActivity extends Activity {
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent intent = getIntent();
+                final int imageId = intent.getIntExtra("imageId",0);
+                final int cropId = intent.getIntExtra("cropId",0);
+                if(imageId==0 || cropId==0){
+                    Toast.makeText(getApplicationContext(),"생선을 선택해 주세요",Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
                 String title = titleEditText.getText().toString();
                 String contents = contentsEditText.getText().toString();
 
                 if(title.equals("")){
                     //제목안씀
-                    Toast.makeText(getApplicationContext(),"제목을 작성해주세요.",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),"제목을 작성해 주세요.",Toast.LENGTH_SHORT).show();
                 }else if(contents.equals("")) {
                     //내용 안씀
-                    Toast.makeText(getApplicationContext(), "본문 내용을 작성해주세요.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "본문 내용을 작성해 주세요.", Toast.LENGTH_SHORT).show();
                 }else{
                     String reportClass = spinner.getSelectedItem().toString();
-                    //int cropId;
                     Toast.makeText(getApplicationContext(), reportClass, Toast.LENGTH_SHORT).show();
-                    reportData=new ReportData(1,reportClass,title,contents);
+                    reportData=new ReportData(cropId,reportClass,title,contents);
                 }
 
                 //데이터 서버로 보내기
