@@ -3,9 +3,11 @@ package com.example.emsys.fishflow;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
@@ -15,6 +17,23 @@ import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.FormBody;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 public class ReportActivity extends Activity {
 
     private Button cencleButton;
@@ -23,7 +42,7 @@ public class ReportActivity extends Activity {
     private EditText contentsEditText;
     private Spinner spinner;
 
-    private ReportData reportData;
+    ReportData reportData=null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +86,7 @@ public class ReportActivity extends Activity {
                     return;
                 }
 
+
                 String title = titleEditText.getText().toString();
                 String contents = contentsEditText.getText().toString();
 
@@ -78,13 +98,15 @@ public class ReportActivity extends Activity {
                     Toast.makeText(getApplicationContext(), "본문 내용을 작성해 주세요.", Toast.LENGTH_SHORT).show();
                 }else{
                     String reportClass = spinner.getSelectedItem().toString();
-                    Toast.makeText(getApplicationContext(), reportClass, Toast.LENGTH_SHORT).show();
-                    reportData=new ReportData(cropId,reportClass,title,contents);
+                    if(reportClass.equals("인식 오류")){
+                        reportData=new ReportData(cropId,reportClass,title,contents);
+                    }else{
+                        reportData=new ReportData(reportClass,title,contents);
+                    }
+                    String url = "http://192.168.132.209/fishflow/postReport.php";
+                    new postReportTask().execute(url);           //신고 데이터 서버로 전송
                 }
 
-                //데이터 서버로 보내기
-                //Gson gson = new Gson();
-                //String jsonData = gson.toJson()
                 finish();
             }
         });
@@ -107,4 +129,48 @@ public class ReportActivity extends Activity {
         return;
     }
     */
+
+    private class postReportTask extends AsyncTask<String, Void, String> {
+        OkHttpClient client = new OkHttpClient();
+
+        @Override
+        protected String doInBackground(String... params) {
+            String result = null;
+            String strUrl = params[0];
+
+            try{
+                RequestBody formBody = new FormBody.Builder()
+                        .add("cropId", Integer.toString(reportData.getCropId()))
+                        .add("reportClass", reportData.getReportClass())
+                        .add("title", reportData.getTitle())
+                        .add("contents", reportData.getContents())
+                        .build();
+                Request request = new Request.Builder()
+                        .url(strUrl)
+                        .post(formBody)
+                        .build();
+
+                Response response = client.newCall(request).execute();
+
+                result = response.body().string();
+            }catch (IOException e){
+                e.printStackTrace();
+                Log.e("HttpAsyncTask ",e.getMessage());
+            }
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+
+            if(s.equals("true")){
+                Toast.makeText(getApplicationContext(),"신고접수를 완료하였습니다.",Toast.LENGTH_SHORT).show();
+                Log.d("HttpAsyncTask ","result : "+s);
+            }else {
+                Toast.makeText(getApplicationContext(),"신고접수를 실패하였습니다.",Toast.LENGTH_SHORT).show();
+                Log.d("HttpAsyncTask ","result fail : "+s);
+            }
+        }
+    }
 }

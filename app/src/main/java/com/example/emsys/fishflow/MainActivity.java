@@ -15,6 +15,7 @@ import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -43,6 +44,14 @@ import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.util.Calendar;
 
+import okhttp3.FormBody;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 //import com.example.leedongjin_notebook.fishflow2.R;
 
 public class MainActivity extends AppCompatActivity {
@@ -61,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
     private FrameLayout cameraPreviewLayout;
     private static CameraPreview cameraPreview;
     private static Camera mCamera;
+    private static int imageId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,8 +84,6 @@ public class MainActivity extends AppCompatActivity {
         // 안드로이드 6.0 이상 버전에서는 권한 허가를 요청하고 권한을 받으면 초기화
         requestPermission();
 
-
-
         /////   카메라 프리뷰 설정  //////
         //카메라 객체를 받아서 다시 CameraPreview에 넣어줌
         cameraPreview=new CameraPreview(MainActivity.this,mCamera);
@@ -83,9 +91,6 @@ public class MainActivity extends AppCompatActivity {
         //FrameLayout에 CameraPreview를 add
         cameraPreviewLayout=(FrameLayout)findViewById(R.id.cameraPreviewLayout);
         cameraPreviewLayout.addView(cameraPreview);
-
-
-
 
         /////   버튼 설정  //////
         //galleryButton
@@ -148,12 +153,15 @@ public class MainActivity extends AppCompatActivity {
                                 String ImagePath = StoreBitmap(bitmap,100);
 
                                 //서버 전송
-                                //byteArray 생성
-                                //byte[] byteArray=BitmapToByteArray(bitmap,100);
+                                String url = "http://192.168.132.209/fishflow/postImage.php";
+                                new postImageTask().execute(url,ImagePath);           //신고 데이터 서버로 전송
+
 
                                 //결과화면으로 데이터 전송
                                 Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
                                 intent.putExtra("ImagePath",ImagePath);
+                                intent.putExtra("ImageId",imageId);
+
                                 startActivity(intent);
 
                                 // 다시 미리보기 화면 보여줌
@@ -337,8 +345,14 @@ public class MainActivity extends AppCompatActivity {
             case REQ_GALLERY_CODE: {
                 Uri uri = data.getData();
                 String ImagePath=getRealPathFromURI(uri);
+
+                //서버 전송
+                String url = "http://192.168.132.209/fishflow/postImage.php";
+                new postImageTask().execute(url,ImagePath);           //신고 데이터 서버로 전송
+
                 Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
                 intent.putExtra("ImagePath",ImagePath);
+                intent.putExtra("ImageId",imageId);
                 startActivity(intent);
                 break;
             }
@@ -351,4 +365,50 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+    private class postImageTask extends AsyncTask<String, String, String> {
+        OkHttpClient client = new OkHttpClient();
+
+        @Override
+        protected String doInBackground(String... params) {
+            String result = null;
+            String strUrl = params[0];
+            String imagePath = params[1];
+            String imageName = imagePath.substring(imagePath.lastIndexOf("/")+1);
+            File image = new File(imagePath);
+
+            try{
+                RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+                        .addFormDataPart("data", imageName, RequestBody.create(MediaType.parse("image/*"), image))
+                        .build();
+
+                okhttp3.Request request = new okhttp3.Request.Builder()
+                        .url(strUrl)
+                        .post(requestBody)
+                        .build();
+
+                Response response = client.newCall(request).execute();
+                result = response.body().string();
+            }catch (IOException e){
+                e.printStackTrace();
+                Log.e("HttpAsyncTask ",e.getMessage());
+            }
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+
+            if(!s.equals("")){
+                imageId=Integer.parseInt(s);
+                Toast.makeText(getApplicationContext(),"분석 완료하였습니다.",Toast.LENGTH_SHORT).show();
+                Log.d("HttpAsyncTask ","result : "+s);
+            }else {
+                Toast.makeText(getApplicationContext(),"분석 실패하였습니다.",Toast.LENGTH_SHORT).show();
+                Log.d("HttpAsyncTask ","result fail : "+s);
+            }
+        }
+    }
+
 }

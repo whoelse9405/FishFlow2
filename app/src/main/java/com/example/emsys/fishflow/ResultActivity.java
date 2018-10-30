@@ -3,7 +3,7 @@ package com.example.emsys.fishflow;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
@@ -15,11 +15,19 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class ResultActivity extends AppCompatActivity {
 
@@ -29,16 +37,16 @@ public class ResultActivity extends AppCompatActivity {
     private ImageButton helpButton;             //도움말 버튼
     private ImageButton backButton;             //뒤로가기 버튼
     private Button reportButton;                //신고 버튼
-    private ImageView imageView;                //결과 화면
+
+    //결과 화면
+    private ImageView imageView;
     private TextView species;
     private TextView origin;
     private TextView fishInfoText;
 
-    //private List<ResultSelectButton> resultSelectButton;
-    //private ResultData resultData;
+    private ResultData resultData;
     private ResultSelectButton currentSelectButton=null;      //현재 선택된 버튼
-    List<Fish>cropImages = new ArrayList<Fish>();
-    int imageId;
+
 
     @Override
     protected  void onCreate( Bundle savedInstanceState){
@@ -51,6 +59,7 @@ public class ResultActivity extends AppCompatActivity {
         //이미지뷰 세팅
         Intent intent = getIntent();
         String ImagePath = intent.getStringExtra("ImagePath");
+        int ImageId = intent.getIntExtra("ImageId",0);  ImageId=1;
         Bitmap bitmap=null;
         if(ImagePath!=null){
             bitmap = BitmapFactory.decodeFile(ImagePath);
@@ -58,19 +67,10 @@ public class ResultActivity extends AppCompatActivity {
             imageView.setImageBitmap(bitmap);
         }
 
-
-        //////결과 세팅
         //서버에서 결과데이터 받기
-        imageId=1;
-        //List<Fish>cropImages = new ArrayList<Fish>();
-        cropImages.add(new Fish(1,0.0,0.0,50,50,false,1,"고등어","국산","국산 고등어입니다."));
-        cropImages.add(new Fish(2,0,50,50,100,false,2,"고등어","노르웨이산","노르웨이산 고등어입니다."));
-        cropImages.add(new Fish(3,50,0.0,100,50,false,3,"고등어","중국산","중국산 고등어입니다."));
-        cropImages.add(new Fish(4,50,50,100,100,false,3,"고등어","중국산","중국산 고등어입니다."));
-        cropImages.add(new Fish(5,25,25,75,75,false,3,"고등어","중국산","중국산 고등어입니다."));
-        //resultData=new ResultData(imageId,bitmap,cropImages);
-
-
+        resultData = new ResultData(ImageId,bitmap,null);
+        String url = "http://192.168.132.209/fishflow/getResult.php";
+        new HttpAsyncTask().execute(url);
 
 
         helpButton = (ImageButton)findViewById(R.id.helpButton);
@@ -101,7 +101,7 @@ public class ResultActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getApplicationContext(),ReportActivity.class);
-                intent.putExtra("imageId",imageId);
+                intent.putExtra("imageId",resultData.getImage().getId());
                 intent.putExtra("cropId",currentSelectButton.getFish().getId());
                 startActivity(intent);
             }
@@ -116,12 +116,14 @@ public class ResultActivity extends AppCompatActivity {
         imageViewWidth = imageView.getWidth();
         imageViewHeight = imageView.getHeight();
 
-        for(Fish fish: cropImages){
+        if(resultData.getCropImages()==null) return;
+
+        for(Fish fish: resultData.getCropImages()){
             ResultSelectButton button = new ResultSelectButton(this, fish);
-            int startX = (int)(fish.startX*imageViewWidth/100);
-            int startY = (int)(fish.startY*imageViewHeight/100);
-            int width = (int)((fish.endX-fish.startX)*imageViewWidth/100);
-            int height = (int)((fish.endX-fish.startX)*imageViewHeight/100);
+            int startX = (int)(fish.getStartX()*imageViewWidth/100);
+            int startY = (int)(fish.getStartY()*imageViewHeight/100);
+            int width = (int)((fish.getEndX()-fish.getStartX())*imageViewWidth/100);
+            int height = (int)((fish.getEndX()-fish.getStartX())*imageViewHeight/100);
 
 
 
@@ -166,4 +168,53 @@ public class ResultActivity extends AppCompatActivity {
         }
 
     }
+
+    public ResultData getResultData() {
+        return resultData;
+    }
+
+    public void setResultData(ResultData resultData) {
+        this.resultData = resultData;
+    }
+
+    private class HttpAsyncTask extends AsyncTask<String, Void, String> {
+        OkHttpClient client = new OkHttpClient();
+
+        @Override
+        protected String doInBackground(String... params) {
+            String result = null;
+            String strUrl = params[0];
+
+            try{
+                Request request = new Request.Builder()
+                        .url(strUrl)
+                        .build();
+                Response response = client.newCall(request).execute();
+
+                Gson gson = new Gson();
+                Type listType = new TypeToken<ArrayList<Fish>>(){}.getType();
+                result = response.body().string();
+                List<Fish> fishList = gson.fromJson(result,listType);
+                resultData.setCropImages(fishList);
+            }catch (IOException e){
+                e.printStackTrace();
+                Log.e("HttpAsyncTask ",e.getMessage());
+            }
+
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+
+            if(s!=null){
+                Log.d("HttpAsyncTask ","result : "+s);
+            }else {
+                Log.d("HttpAsyncTask ","result fail : "+s);
+            }
+        }
+    }
 }
+
+
