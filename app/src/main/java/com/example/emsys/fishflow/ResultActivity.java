@@ -69,7 +69,7 @@ public class ResultActivity extends AppCompatActivity {
 
         //서버에서 결과데이터 받기
         resultData = new ResultData(ImageId,bitmap,null);
-        String url = "http://192.168.132.209/fishflow/getResult.php";
+        String url = "http://emsys.gonetis.com/fishflow/getResult.php";
         new HttpAsyncTask().execute(url);
 
 

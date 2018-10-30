@@ -103,7 +103,7 @@ public class ReportActivity extends Activity {
                     }else{
                         reportData=new ReportData(reportClass,title,contents);
                     }
-                    String url = "http://192.168.132.209/fishflow/postReport.php";
+                    String url = "http://emsys.gonetis.com/fishflow/postReport.php";
                     new postReportTask().execute(url);           //신고 데이터 서버로 전송
                 }
 

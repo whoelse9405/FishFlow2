@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
                                 String ImagePath = StoreBitmap(bitmap,100);
 
                                 //서버 전송
-                                String url = "http://192.168.132.209/fishflow/postImage.php";
+                                String url = "http://emsys.gonetis.com/fishflow/postImage.php";
                                 new postImageTask().execute(url,ImagePath);           //신고 데이터 서버로 전송
 
 
@@ -347,7 +347,7 @@ public class MainActivity extends AppCompatActivity {
                 String ImagePath=getRealPathFromURI(uri);
 
                 //서버 전송
-                String url = "http://192.168.132.209/fishflow/postImage.php";
+                String url = "http://emsys.gonetis.com/fishflow/postImage.php";
                 new postImageTask().execute(url,ImagePath);           //신고 데이터 서버로 전송
 
                 Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
