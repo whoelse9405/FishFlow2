@@ -16,17 +16,22 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
+import org.json.JSONException;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class ResultActivity extends AppCompatActivity {
@@ -59,7 +64,7 @@ public class ResultActivity extends AppCompatActivity {
         //이미지뷰 세팅
         Intent intent = getIntent();
         String ImagePath = intent.getStringExtra("ImagePath");
-        int ImageId = intent.getIntExtra("ImageId",0);  ImageId=1;
+        int imageId = intent.getIntExtra("ImageId",0);
         Bitmap bitmap=null;
         if(ImagePath!=null){
             bitmap = BitmapFactory.decodeFile(ImagePath);
@@ -68,8 +73,8 @@ public class ResultActivity extends AppCompatActivity {
         }
 
         //서버에서 결과데이터 받기
-        resultData = new ResultData(ImageId,bitmap,null);
-        String url = "http://emsys.gonetis.com/fishflow/getResult.php";
+        resultData = new ResultData(imageId,bitmap,null);
+        String url = "http://192.168.132.209/fishflow/getResult.php";
         new HttpAsyncTask().execute(url);
 
 
@@ -100,10 +105,14 @@ public class ResultActivity extends AppCompatActivity {
         reportButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(),ReportActivity.class);
-                intent.putExtra("imageId",resultData.getImage().getId());
-                intent.putExtra("cropId",currentSelectButton.getFish().getId());
-                startActivity(intent);
+                if(currentSelectButton!=null){
+                    Intent intent = new Intent(getApplicationContext(),ReportActivity.class);
+                    intent.putExtra("imageId",resultData.getImage().getId());
+                    intent.putExtra("cropId",currentSelectButton.getFish().getId());
+                    startActivity(intent);
+                }else {
+                    Toast.makeText(getApplicationContext(),"신고할 생선을 선택해 주세요",Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -123,7 +132,7 @@ public class ResultActivity extends AppCompatActivity {
             int startX = (int)(fish.getStartX()*imageViewWidth/100);
             int startY = (int)(fish.getStartY()*imageViewHeight/100);
             int width = (int)((fish.getEndX()-fish.getStartX())*imageViewWidth/100);
-            int height = (int)((fish.getEndX()-fish.getStartX())*imageViewHeight/100);
+            int height = (int)((fish.getEndY()-fish.getStartY())*imageViewHeight/100);
 
 
 
@@ -183,7 +192,7 @@ public class ResultActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... params) {
             String result = null;
-            String strUrl = params[0];
+            String strUrl = params[0]+"?imageId="+resultData.getImage().getId();
 
             try{
                 Request request = new Request.Builder()
@@ -191,11 +200,7 @@ public class ResultActivity extends AppCompatActivity {
                         .build();
                 Response response = client.newCall(request).execute();
 
-                Gson gson = new Gson();
-                Type listType = new TypeToken<ArrayList<Fish>>(){}.getType();
                 result = response.body().string();
-                List<Fish> fishList = gson.fromJson(result,listType);
-                resultData.setCropImages(fishList);
             }catch (IOException e){
                 e.printStackTrace();
                 Log.e("HttpAsyncTask ",e.getMessage());
@@ -207,11 +212,18 @@ public class ResultActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-
+            //Log.d("HttpAsyncTask ","result : "+s);
             if(s!=null){
-                Log.d("HttpAsyncTask ","result : "+s);
+                try{
+                    Gson gson = new Gson();
+                    Type listType = new TypeToken<ArrayList<Fish>>(){}.getType();
+                    List<Fish> fishList = gson.fromJson(s,listType);
+                    resultData.setCropImages(fishList);
+                }catch (IllegalStateException e){
+                    Log.e("HttpAsyncTask ",e.getMessage());
+                }
             }else {
-                Log.d("HttpAsyncTask ","result fail : "+s);
+                Log.d("HttpAsyncTask ","result fail");
             }
         }
     }

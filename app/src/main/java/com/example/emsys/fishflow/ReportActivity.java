@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -103,11 +104,10 @@ public class ReportActivity extends Activity {
                     }else{
                         reportData=new ReportData(reportClass,title,contents);
                     }
-                    String url = "http://emsys.gonetis.com/fishflow/postReport.php";
+                    String url = "http://192.168.132.209/fishflow/postReport.php";
                     new postReportTask().execute(url);           //신고 데이터 서버로 전송
+                    finish();
                 }
-
-                finish();
             }
         });
 
@@ -144,6 +144,9 @@ public class ReportActivity extends Activity {
                         .add("reportClass", reportData.getReportClass())
                         .add("title", reportData.getTitle())
                         .add("contents", reportData.getContents())
+                        .add("model", Build.MODEL)                                                                     //기기 모델명
+                        .add("releaseVersion", Build.VERSION.RELEASE)                                                //os 버전
+                        .add("uuid", Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID))     //안드로이드 고유값
                         .build();
                 Request request = new Request.Builder()
                         .url(strUrl)

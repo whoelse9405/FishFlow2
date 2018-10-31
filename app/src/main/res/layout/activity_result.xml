@@ -117,9 +117,8 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="100"
                                 android:gravity="center"
-                                android:paddingBottom="10dp"
                                 android:paddingTop="10dp"
-                                android:text="고등어"
+                                android:paddingBottom="10dp"
                                 android:textSize="18sp" />
                         </LinearLayout>
 
@@ -152,9 +151,8 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="100"
                                 android:gravity="center"
-                                android:paddingBottom="10dp"
                                 android:paddingTop="10dp"
-                                android:text="노르웨이"
+                                android:paddingBottom="10dp"
                                 android:textSize="18sp" />
                         </LinearLayout>
 
@@ -182,8 +180,7 @@
                 <TextView
                     android:id="@+id/fishInfoText"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="고등어 또는 참고등어는 고등어과에 속하는 바닷물고기이다.  《자산어보》에는 고등어로 기록되어 있으며, 《재물보》에는 고도어로 기록되었다.  어린 개체는 고도리라 부른다. 영어권 국가에서는 태평양고등어, 일본고등어, 처브고등어라고도 한다. 등빛이 시퍼렇고 무늬가 선명한 대서양고등어와 다르게 무늬가 비교적 흐릿하며 등에 약간 녹색기운이 돌고, 대서양 고등어에 없는 부레가 있다는 점에서 차이를 지닌다." />
+                    android:layout_height="wrap_content" />
 
             </LinearLayout>
 

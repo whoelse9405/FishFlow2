@@ -19,6 +19,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -102,7 +103,6 @@ public class MainActivity extends AppCompatActivity {
                 intent.setType(MediaStore.Images.Media.CONTENT_TYPE);               //타입 결정
                 intent.setData(MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 intent.setType("image/*");                                          //이미지 형태만 가져오기
-                //startActivityForResult(Intent.createChooser(intent, "Select Picture"), REQ_PICK_CODE);
                 startActivityForResult(intent, REQ_GALLERY_CODE);
             }
         });
@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
                                 String ImagePath = StoreBitmap(bitmap,100);
 
                                 //서버 전송
-                                String url = "http://emsys.gonetis.com/fishflow/postImage.php";
+                                String url = "http://192.168.132.209/fishflow/postImage.php";
                                 new postImageTask().execute(url,ImagePath);           //신고 데이터 서버로 전송
 
 
@@ -347,7 +347,7 @@ public class MainActivity extends AppCompatActivity {
                 String ImagePath=getRealPathFromURI(uri);
 
                 //서버 전송
-                String url = "http://emsys.gonetis.com/fishflow/postImage.php";
+                String url = "http://192.168.132.209/fishflow/postImage.php";
                 new postImageTask().execute(url,ImagePath);           //신고 데이터 서버로 전송
 
                 Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
@@ -379,7 +379,8 @@ public class MainActivity extends AppCompatActivity {
 
             try{
                 RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
-                        .addFormDataPart("data", imageName, RequestBody.create(MediaType.parse("image/*"), image))
+                        .addFormDataPart("uuid",Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID))
+                        .addFormDataPart("image", imageName, RequestBody.create(MediaType.parse("image/*"), image))
                         .build();
 
                 okhttp3.Request request = new okhttp3.Request.Builder()
