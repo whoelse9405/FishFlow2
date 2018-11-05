@@ -36,6 +36,7 @@ import okhttp3.Response;
 
 public class ResultActivity extends AppCompatActivity {
 
+    private static final String TAG = ResultActivity.class.getSimpleName();
     int imageViewWidth,imageViewHeight;     //이미지뷰 크기
 
     private FrameLayout resultLayout;           //결과화면 레이아웃
@@ -74,7 +75,7 @@ public class ResultActivity extends AppCompatActivity {
 
         //서버에서 결과데이터 받기
         resultData = new ResultData(imageId,bitmap,null);
-        String url = "http://192.168.132.209/fishflow/getResult.php";
+        String url = getString(R.string.server_url)+"getResult.php";
         new HttpAsyncTask().execute(url);
 
 
@@ -116,19 +117,35 @@ public class ResultActivity extends AppCompatActivity {
             }
         });
 
+        Log.d(TAG,"end onCreate!");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
     //이미지뷰 크기 구하기 버튼 생성 및 설정
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
+        Log.d(TAG,"start setButton!");
         imageViewWidth = imageView.getWidth();
         imageViewHeight = imageView.getHeight();
 
-        if(resultData.getCropImages()==null) return;
+
+        if(resultData.getCropImages()==null){
+            Log.d(TAG,"not data!");
+            return;
+        }
 
         for(Fish fish: resultData.getCropImages()){
-            ResultSelectButton button = new ResultSelectButton(this, fish);
+            ResultSelectButton button = new ResultSelectButton(getApplicationContext(), fish);
             int startX = (int)(fish.getStartX()*imageViewWidth/100);
             int startY = (int)(fish.getStartY()*imageViewHeight/100);
             int width = (int)((fish.getEndX()-fish.getStartX())*imageViewWidth/100);
@@ -138,9 +155,9 @@ public class ResultActivity extends AppCompatActivity {
 
             //버튼 테마적용
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                button.setBackground(ContextCompat.getDrawable(this, R.drawable.result_no_selected_button));
+                button.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.result_no_selected_button));
             } else {
-                button.setBackgroundDrawable(ContextCompat.getDrawable(this, R.drawable.result_no_selected_button));
+                button.setBackgroundDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.result_no_selected_button));
             }
 
             //클릭 이벤트 설정
@@ -167,6 +184,7 @@ public class ResultActivity extends AppCompatActivity {
             });
             resultLayout.addView(button);
 
+
             //위치(마진) 설정
             FrameLayout.LayoutParams mLayoutParams = (FrameLayout.LayoutParams) button.getLayoutParams();
             mLayoutParams.setMargins(startX,startY,0,0);
@@ -174,6 +192,7 @@ public class ResultActivity extends AppCompatActivity {
             mLayoutParams.width=width;
             mLayoutParams.gravity = Gravity.LEFT | Gravity.TOP;
             button.setLayoutParams(mLayoutParams);
+            Log.d(TAG,"end setButton!");
         }
 
     }
@@ -203,27 +222,36 @@ public class ResultActivity extends AppCompatActivity {
                 result = response.body().string();
             }catch (IOException e){
                 e.printStackTrace();
-                Log.e("HttpAsyncTask ",e.getMessage());
+                Log.e(TAG,e.getMessage());
             }
 
             return result;
         }
 
+
+
+
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            //Log.d("HttpAsyncTask ","result : "+s);
             if(s!=null){
                 try{
+                    Log.d(TAG,"start http Done!");
                     Gson gson = new Gson();
                     Type listType = new TypeToken<ArrayList<Fish>>(){}.getType();
                     List<Fish> fishList = gson.fromJson(s,listType);
+
                     resultData.setCropImages(fishList);
+
+                    Log.d(TAG,"get data! : "+resultData.getCropImages());
+
+
+                    Log.d(TAG,"end http Done!");
                 }catch (IllegalStateException e){
-                    Log.e("HttpAsyncTask ",e.getMessage());
+                    Log.e(TAG,e.getMessage());
                 }
             }else {
-                Log.d("HttpAsyncTask ","result fail");
+                Log.d(TAG,"result fail");
             }
         }
     }

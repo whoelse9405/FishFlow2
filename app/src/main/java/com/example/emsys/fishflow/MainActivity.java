@@ -1,11 +1,8 @@
 package com.example.emsys.fishflow;
 
-import android.Manifest;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -20,13 +17,10 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
-import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -41,15 +35,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.util.Calendar;
 
-import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
@@ -57,21 +48,23 @@ import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = MainActivity.class.getSimpleName();
     static final int REQ_GALLERY_CODE = 1;
     static final int REQ_CAMERA_CODE = 2;
-    static final int REQ_IMAGE_CROP = 3;
-    static final int REQ_PERMISSION_CAMERA = 4;
-    private final int RESULT_PERMISSIONS = 100;
+
+    private static Context mContext;
 
     private static ImageButton galleryButton;
     private static ImageButton searchButton;
     private static ImageButton exitButton;
     private static ImageButton helpButton;
 
-    private FrameLayout cameraPreviewLayout;
+    private static FrameLayout cameraPreviewLayout;
     private static CameraPreview cameraPreview;
     private static Camera mCamera;
     private static int imageId;
+
+    private static Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,8 +75,7 @@ public class MainActivity extends AppCompatActivity {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        // 안드로이드 6.0 이상 버전에서는 권한 허가를 요청하고 권한을 받으면 초기화
-        requestPermission();
+        setInit();
 
         /////   카메라 프리뷰 설정  //////
         //카메라 객체를 받아서 다시 CameraPreview에 넣어줌
@@ -112,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
         helpButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), HelpActivity.class);
+                Intent intent = new Intent(getApplicationContext(), SplashActivity.class);
                 startActivity(intent);
             }
         });
@@ -141,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
                         // byte[] data - 사진 데이타
                         public void onPictureTaken(byte[] data, Camera camera) {
                             try {
+
                                 // 사진데이타를 비트맵 객체로 저장
                                 Bitmap bitmap = BitmapFactory.decodeByteArray(data,0,data.length);
 
@@ -152,20 +145,15 @@ public class MainActivity extends AppCompatActivity {
                                 ////파일로 저장
                                 String ImagePath = StoreBitmap(bitmap,100);
 
-                                //서버 전송
-                                String url = "http://192.168.132.209/fishflow/postImage.php";
+                                //인텐트 작성
+                                intent = new Intent(getApplicationContext(), ResultActivity.class);
+                                intent.putExtra("ImagePath",ImagePath);
+                                intent.addFlags(intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+                                //서버 전송 후 결과화면으로 전환
+                                String url = getString(R.string.server_url)+"postImage.php";
                                 new postImageTask().execute(url,ImagePath);           //신고 데이터 서버로 전송
 
-
-                                //결과화면으로 데이터 전송
-                                Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
-                                intent.putExtra("ImagePath",ImagePath);
-                                intent.putExtra("ImageId",imageId);
-
-                                startActivity(intent);
-
-                                // 다시 미리보기 화면 보여줌
-                                camera.startPreview();
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -188,8 +176,11 @@ public class MainActivity extends AppCompatActivity {
             folder = Environment.getRootDirectory();
         }else{
             // SD카드가 마운트되어있음
-            folder = Environment.getExternalStorageDirectory();
+            //folder = Environment.getExternalStorageDirectory();
+            folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         }
+
+
         folderPath = folder.getAbsolutePath() + String.format("/FishFlow");
         folder=new File(folderPath);
 
@@ -215,6 +206,10 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        //MediaScannerConnection.scanFile(mContext,);
+
+        //mContext.sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED,Uri.parse("file://" + Environment.getExternalStorageDirectory())));
 
         return file.toString();
     }
@@ -277,6 +272,7 @@ public class MainActivity extends AppCompatActivity {
         // 카메라 객체를 R.layout.activity_main의 레이아웃에 선언한 SurfaceView에서 먼저 정의해야 함으로 setContentView 보다 먼저 정의한다.
         try {
             mCamera = Camera.open();
+            mContext=getApplicationContext();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -303,37 +299,6 @@ public class MainActivity extends AppCompatActivity {
         return result;
     }
 
-    //권한 요청
-    public boolean requestPermission(){
-        int sdkVersion = Build.VERSION.SDK_INT;
-        if(sdkVersion >= Build.VERSION_CODES.M) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.INTERNET}, RESULT_PERMISSIONS);
-            }else {
-                setInit();
-            }
-        }else{  // version 6 이하일때
-            setInit();
-            //return true;
-        }
-
-        return true;
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        if (RESULT_PERMISSIONS == requestCode) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0]==Manifest.permission.CAMERA) {
-                // 카메라 권한 허가시
-                setInit();
-            } else {
-                // 카메라 권한 거부시 재요청
-                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.INTERNET}, RESULT_PERMISSIONS);
-            }
-            return;
-        }
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -346,14 +311,14 @@ public class MainActivity extends AppCompatActivity {
                 Uri uri = data.getData();
                 String ImagePath=getRealPathFromURI(uri);
 
+                intent = new Intent(getApplicationContext(), ResultActivity.class);
+                intent.putExtra("ImagePath",ImagePath);
+
                 //서버 전송
-                String url = "http://192.168.132.209/fishflow/postImage.php";
+                String url = getString(R.string.server_url)+"postImage.php";
                 new postImageTask().execute(url,ImagePath);           //신고 데이터 서버로 전송
 
-                Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
-                intent.putExtra("ImagePath",ImagePath);
-                intent.putExtra("ImageId",imageId);
-                startActivity(intent);
+
                 break;
             }
             case REQ_CAMERA_CODE: {
@@ -368,6 +333,11 @@ public class MainActivity extends AppCompatActivity {
 
     private class postImageTask extends AsyncTask<String, String, String> {
         OkHttpClient client = new OkHttpClient();
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
 
         @Override
         protected String doInBackground(String... params) {
@@ -391,8 +361,7 @@ public class MainActivity extends AppCompatActivity {
                 Response response = client.newCall(request).execute();
                 result = response.body().string();
             }catch (IOException e){
-                e.printStackTrace();
-                Log.e("HttpAsyncTask ",e.getMessage());
+                Log.e(TAG,e.getMessage());
             }
             return result;
         }
@@ -403,11 +372,14 @@ public class MainActivity extends AppCompatActivity {
 
             if(!s.equals("")){
                 imageId=Integer.parseInt(s);
+                intent.putExtra("ImageId",imageId);
+                startActivity(intent);
+
                 Toast.makeText(getApplicationContext(),"분석 완료하였습니다.",Toast.LENGTH_SHORT).show();
-                Log.d("HttpAsyncTask ","result : "+s);
+                Log.d(TAG,"okhttp result : "+s);
             }else {
                 Toast.makeText(getApplicationContext(),"분석 실패하였습니다.",Toast.LENGTH_SHORT).show();
-                Log.d("HttpAsyncTask ","result fail : "+s);
+                Log.d(TAG,"okhttp result failed");
             }
         }
     }

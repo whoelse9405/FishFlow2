@@ -29,6 +29,8 @@ import static android.content.Context.WINDOW_SERVICE;
 
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback{
 
+    private static final String TAG = SurfaceView.class.getSimpleName();
+
     private SurfaceHolder mHolder;
     private Camera mCamera;
     public List<Camera.Size> listPreviewSizes;
@@ -83,7 +85,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             // 카메라 미리보기를 시작한다
             mCamera.startPreview();
         } catch (IOException e) {
-            Log.e("CameraSurfaceView", "Failed to set camera preview.", e);
+            Log.e(TAG, "Failed to set camera preview.", e);
         }
     }
 
@@ -260,13 +262,13 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
             if(picSum == preSum && picSum2 == preSum2){
                 parameters.setPreviewSize(size.width, size.height);
-                System.out.println("설정된 비율 "+preSum+":"+preSum2);
+                //System.out.println("설정된 비율 "+preSum+":"+preSum2);
                 return parameters;
             }
         }
 
         //비율이 같지 않을때 알림
-        System.out.println("지원하는 사진 크기와 프리뷰의 비율이 없음");
+        //System.out.println("지원하는 사진 크기와 프리뷰의 비율이 없음");
 
         return parameters;
     }

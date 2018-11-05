@@ -37,6 +37,8 @@ import okhttp3.Response;
 
 public class ReportActivity extends Activity {
 
+    private static final String TAG = ReportData.class.getSimpleName();
+
     private Button cencleButton;
     private Button sendButton;
     private EditText titleEditText;
@@ -104,7 +106,7 @@ public class ReportActivity extends Activity {
                     }else{
                         reportData=new ReportData(reportClass,title,contents);
                     }
-                    String url = "http://192.168.132.209/fishflow/postReport.php";
+                    String url = getString(R.string.server_url)+"postReport.php";
                     new postReportTask().execute(url);           //신고 데이터 서버로 전송
                     finish();
                 }
@@ -121,14 +123,6 @@ public class ReportActivity extends Activity {
         }
         return true;
     }
-
-    /*
-    @Override
-    public void onBackPressed() {
-        //안드로이드 백버튼 막기
-        return;
-    }
-    */
 
     private class postReportTask extends AsyncTask<String, Void, String> {
         OkHttpClient client = new OkHttpClient();
@@ -158,7 +152,7 @@ public class ReportActivity extends Activity {
                 result = response.body().string();
             }catch (IOException e){
                 e.printStackTrace();
-                Log.e("HttpAsyncTask ",e.getMessage());
+                Log.e(TAG,e.getMessage());
             }
             return result;
         }
@@ -169,10 +163,10 @@ public class ReportActivity extends Activity {
 
             if(s.equals("true")){
                 Toast.makeText(getApplicationContext(),"신고접수를 완료하였습니다.",Toast.LENGTH_SHORT).show();
-                Log.d("HttpAsyncTask ","result : "+s);
+                Log.d(TAG,"result : "+s);
             }else {
                 Toast.makeText(getApplicationContext(),"신고접수를 실패하였습니다.",Toast.LENGTH_SHORT).show();
-                Log.d("HttpAsyncTask ","result fail : "+s);
+                Log.d(TAG,"result fail : "+s);
             }
         }
     }

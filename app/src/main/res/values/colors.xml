@@ -4,5 +4,8 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="appThemeColor">#FF7828</color>
+    <color name="appThemeColor1">#EE7828</color>
+    <color name="appThemeColor2">#DD7828</color>
+
 
 </resources>

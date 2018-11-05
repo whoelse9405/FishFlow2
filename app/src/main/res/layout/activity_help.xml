@@ -10,8 +10,9 @@
         android:id="@+id/imageView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#50000000"
-        app:srcCompat="@android:color/darker_gray" />
+        app:srcCompat="@android:color/darker_gray"
+        android:adjustViewBounds="true"
+        android:background="@android:color/transparent"/>
 
     <ImageButton
         android:id="@+id/exitButton"

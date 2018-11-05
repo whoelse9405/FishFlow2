@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">FishFlow</string>
+    <string name="server_url">http://192.168.132.209/fishflow/</string>
+
 
     <string-array name="report_class">
         <item >인식 오류 </item>
