@@ -4,13 +4,11 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.github.paolorotolo.appintro.AppIntro;
@@ -19,7 +17,9 @@ import com.github.paolorotolo.appintro.AppIntroFragment;
 public class SplashActivity extends AppIntro {
 
     private static final String TAG = SplashActivity.class.getSimpleName();
-    final private int RESULT_PERMISSIONS = 100;
+    final private int REQ_PERMISSIONS_CAMERA = 100;
+    final private int REQ_PERMISSIONS_WRITE_EXTERNAL_STORAGE = 101;
+    final private int REQ_PERMISSIONS_INTERNET = 102;
 
     //Fragment mSplash1 = new SplashFragment1();
     //Fragment mSplash2 = new SplashFragment2();
@@ -44,8 +44,8 @@ public class SplashActivity extends AppIntro {
 
 
         addSlide(AppIntroFragment.newInstance("FishFlow","FishFlow는 인공지능 학습을 기반으로 간편하게 어종 및 생선의 원산지를 분석해주는 애플리케이션입니다.",R.mipmap.ic_launcher,ContextCompat.getColor(getApplicationContext(),R.color.appThemeColor)));
-        addSlide(AppIntroFragment.newInstance("원클릭 분석 서비스, FishFlow","단 한번의 클릭으로 생선을 분석해보세요!",R.mipmap.ic_launcher,ContextCompat.getColor(getApplicationContext(),R.color.appThemeColor)));
-        addSlide(AppIntroFragment.newInstance("진화하는 FishFlow","여러분의 신고를 통해 좀 더 정확한 결과를 가져다 드립니다!",R.mipmap.ic_launcher,ContextCompat.getColor(getApplicationContext(),R.color.appThemeColor)));
+        addSlide(AppIntroFragment.newInstance("원클릭 분석 서비스","단 한번의 클릭으로 생선을 분석해보세요!",R.mipmap.ic_launcher,ContextCompat.getColor(getApplicationContext(),R.color.appThemeColor)));
+        addSlide(AppIntroFragment.newInstance("진화하는 서비스","여러분의 신고를 통해 좀 더 정확한 결과를 가져다 드립니다!",R.mipmap.ic_launcher,ContextCompat.getColor(getApplicationContext(),R.color.appThemeColor)));
 
 
         // OPTIONAL METHODS
@@ -108,16 +108,27 @@ public class SplashActivity extends AppIntro {
         if(sdkVersion >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                 //아직 권한요청 수락하지 않음
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.READ_CONTACTS)) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.CAMERA)) {
                     Toast.makeText(this, "앱 실행을 위해서는 카메라 권한을 설정해야 합니다", Toast.LENGTH_LONG).show();
                 }else{
-                    ActivityCompat.requestPermissions(SplashActivity.this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.INTERNET}, RESULT_PERMISSIONS);
+                    ActivityCompat.requestPermissions(SplashActivity.this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.INTERNET}, REQ_PERMISSIONS_CAMERA);
                 }
-            }else {
+            }else if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    Toast.makeText(this, "앱 실행을 위해서는 메모리 쓰기 권한을 설정해야 합니다", Toast.LENGTH_LONG).show();
+                }else{
+                    ActivityCompat.requestPermissions(SplashActivity.this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.INTERNET}, REQ_PERMISSIONS_WRITE_EXTERNAL_STORAGE);
+                }
+            }else if (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.INTERNET)) {
+                    Toast.makeText(this, "앱 실행을 위해서는 메모리 쓰기 권한을 설정해야 합니다", Toast.LENGTH_LONG).show();
+                }else{
+                    ActivityCompat.requestPermissions(SplashActivity.this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.INTERNET}, REQ_PERMISSIONS_INTERNET);
+                }
+            }else{
                 //권한 요청 수락함
                 prefs.edit().putBoolean("isFirstRun",false).apply();
                 startMainActivity();
-
             }
         }else{
             // version 6 이하일때
@@ -129,8 +140,41 @@ public class SplashActivity extends AppIntro {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        requestPermission();
+/*        switch (requestCode){
+
+          case REQ_PERMISSIONS_CAMERA:{
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0]==Manifest.permission.CAMERA) {
+                    // 카메라 권한 허가시
+                    prefs.edit().putBoolean("isFirstRun",false).apply();
+                    startMainActivity();
+
+                } else {
+                    // 카메라 권한 거부시 재요청
+                    requestPermission();
+                }break;
+
+            }
+            case  REQ_PERMISSIONS_WRITE_EXTERNAL_STORAGE:{
+
+            }
+            case REQ_PERMISSIONS_INTERNET: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0]==Manifest.permission.CAMERA && permissions[1]==Manifest.permission.WRITE_EXTERNAL_STORAGE && permissions[2]==Manifest.permission.INTERNET) {
+                    // 카메라 권한 허가시
+                    prefs.edit().putBoolean("isFirstRun",false).apply();
+                    startMainActivity();
+                } else {
+                    // 카메라 권한 거부시 재요청
+                    requestPermission();
+                }break;
+            }
+            default:{
+
+            }
+        }
+
         if (RESULT_PERMISSIONS == requestCode) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0]==Manifest.permission.CAMERA) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0]==Manifest.permission.CAMERA && permissions[1]==Manifest.permission.WRITE_EXTERNAL_STORAGE && permissions[2]==Manifest.permission.INTERNET) {
                 // 카메라 권한 허가시
                 prefs.edit().putBoolean("isFirstRun",false).apply();
                 startMainActivity();
@@ -138,6 +182,6 @@ public class SplashActivity extends AppIntro {
                 // 카메라 권한 거부시 재요청
                 requestPermission();
             }
-        }
+        }*/
     }
 }

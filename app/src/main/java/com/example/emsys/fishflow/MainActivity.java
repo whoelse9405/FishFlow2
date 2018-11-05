@@ -207,9 +207,10 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        //MediaScannerConnection.scanFile(mContext,);
-
-        //mContext.sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED,Uri.parse("file://" + Environment.getExternalStorageDirectory())));
+        //미디어스캐닝(이미지 목록 갱신)
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        mediaScanIntent.setData(Uri.fromFile(file));
+        mContext.sendBroadcast(mediaScanIntent);
 
         return file.toString();
     }
