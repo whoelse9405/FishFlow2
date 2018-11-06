@@ -146,10 +146,10 @@ public class ResultActivity extends AppCompatActivity {
 
         for(Fish fish: resultData.getCropImages()){
             ResultSelectButton button = new ResultSelectButton(getApplicationContext(), fish);
-            int startX = (int)(fish.getStartX()*imageViewWidth/100);
-            int startY = (int)(fish.getStartY()*imageViewHeight/100);
-            int width = (int)((fish.getEndX()-fish.getStartX())*imageViewWidth/100);
-            int height = (int)((fish.getEndY()-fish.getStartY())*imageViewHeight/100);
+            int startX = (int)(fish.getStartX()*imageViewWidth);
+            int startY = (int)(fish.getStartY()*imageViewHeight);
+            int width = (int)((fish.getEndX()-fish.getStartX())*imageViewWidth);
+            int height = (int)((fish.getEndY()-fish.getStartY())*imageViewHeight);
 
 
 

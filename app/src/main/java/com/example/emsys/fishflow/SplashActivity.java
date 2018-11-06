@@ -43,7 +43,7 @@ public class SplashActivity extends AppIntro {
 
 
 
-        addSlide(AppIntroFragment.newInstance("FishFlow","FishFlow는 인공지능 학습을 기반으로 간편하게 어종 및 생선의 원산지를 분석해주는 애플리케이션입니다.",R.mipmap.ic_launcher,ContextCompat.getColor(getApplicationContext(),R.color.appThemeColor)));
+        addSlide(AppIntroFragment.newInstance("FishFlow","FishFlow는 인공지능 학습을 기반으로 간편하게 어종 및 생선의 원산지를 분석해주는 애플리케이션입니다.",R.drawable.splash,ContextCompat.getColor(getApplicationContext(),R.color.appThemeColor)));
         addSlide(AppIntroFragment.newInstance("원클릭 분석 서비스","단 한번의 클릭으로 생선을 분석해보세요!",R.mipmap.ic_launcher,ContextCompat.getColor(getApplicationContext(),R.color.appThemeColor)));
         addSlide(AppIntroFragment.newInstance("진화하는 서비스","여러분의 신고를 통해 좀 더 정확한 결과를 가져다 드립니다!",R.mipmap.ic_launcher,ContextCompat.getColor(getApplicationContext(),R.color.appThemeColor)));
 
